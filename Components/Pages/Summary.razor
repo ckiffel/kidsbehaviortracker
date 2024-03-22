@@ -1,0 +1,41 @@
+﻿@page "/summary"
+@using Microsoft.EntityFrameworkCore
+
+<h1>Comportement des enfants (résumé)</h1>
+
+@foreach (var kid in kids)
+{
+    <table>
+    <tr>
+        <th></th>
+        @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                <th>@day</th>
+            }
+        </tr>
+
+        @foreach (var rule in rules)
+        {
+            <tr>
+                <th></th>
+                @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+                {
+                    <th> ? </th>
+                }
+            </tr>
+        }
+
+    </table>
+}
+
+@code {
+    private IEnumerable<Data.Kid>? kids;
+    private IEnumerable<Data.Rule>? rules;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = new Data.KidsContext();
+        kids = await db.Kids.ToListAsync();
+        rules = await db.Rules.ToListAsync();
+    }
+}

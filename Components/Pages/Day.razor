@@ -1,0 +1,84 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<h1>Quotidien (@date.ToString("dd/MM/yyyy"))</h1>
+
+<table class="table">
+    <tr>
+        <th></th>
+        @foreach (var kid in kids)
+        {
+            <th>@kid.Name</th>
+        }
+    </tr>
+
+    @foreach (var rule in rules)
+    {
+        <tr>
+            <th>@rule.Description</th>
+            @foreach (var kid in kids)
+            {
+                <td>
+                    @foreach (var card in GetCards(kid.KidId, rule.RuleId))
+                    {
+                        <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
+                            Jaune
+                            <button class="btn btn-link" @onclick="() => RemoveCard(card.CardId)">X</button>
+                        </span>
+                    }
+                    <button class="btn btn-warning"
+                        @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Yellow)">Carton jaune</button>
+                    <button class="btn btn-danger" @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Red)">Carton
+                        rouge</button>
+                </td>
+            }
+        </tr>
+    }
+</table>
+
+@code {
+    private IEnumerable<Data.Kid>? kids;
+    private IEnumerable<Data.Rule>? rules;
+    private IEnumerable<Data.Card>? cards;
+
+    private DateTime date = DateTime.Now.Date;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = new Data.KidsContext();
+        kids = await db.Kids.ToListAsync();
+        rules = await db.Rules.ToListAsync();
+        cards = await db.Cards.ToListAsync();
+    }
+
+    private IEnumerable<Data.Card>? GetCards(int kidId, int ruleId)
+    {
+        return cards?.Where(c => c.KidId == kidId && c.RuleId == ruleId && c.Date == date);
+    }
+
+    private async Task AddCard(int kidId, int ruleId, Data.CardColor color)
+    {
+        using var db = new Data.KidsContext();
+        var card = new Data.Card
+            {
+                KidId = kidId,
+                RuleId = ruleId,
+                Date = date,
+                Color = color
+            };
+        db.Cards.Add(card);
+        await db.SaveChangesAsync();
+    }
+
+    private async Task RemoveCard(int cardId)
+    {
+        using var db = new Data.KidsContext();
+        var card = db.Cards.Find(cardId);
+        if (card != null)
+        {
+            db.Cards.Remove(card);
+            await db.SaveChangesAsync();
+        }
+    }
+}

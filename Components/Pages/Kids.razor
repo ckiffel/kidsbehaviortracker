@@ -1,0 +1,68 @@
+﻿@page "/kids"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Enfants</PageTitle>
+
+<h1>Enfants</h1>
+
+@if (kids == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var kid in kids)
+            {
+                <tr>
+                    <td>@kid.Name</td>
+                    <td @onclick="() => DeleteKid(kid.KidId)">Supprimer</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button @onclick="AddKid">Ajouter un enfant</button>
+    <input type="text" @bind="newKidName" />
+
+}
+
+@code {
+    private IEnumerable<Data.Kid>? kids;
+    private string? newKidName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = new Data.KidsContext();
+        kids = await db.Kids.ToListAsync();
+    }
+
+    private async Task AddKid()
+    {
+        if (newKidName == null)
+        {
+            return;
+        }
+        using var db = new Data.KidsContext();
+        db.Kids.Add(new Data.Kid { Name = newKidName });
+        await db.SaveChangesAsync();
+        newKidName = null;
+        kids = await db.Kids.ToListAsync();
+    }
+
+    private async Task DeleteKid(int id)
+    {
+        using var db = new Data.KidsContext();
+        db.Kids.Remove(db.Kids.Find(id));
+        await db.SaveChangesAsync();
+        kids = await db.Kids.ToListAsync();
+    }
+}

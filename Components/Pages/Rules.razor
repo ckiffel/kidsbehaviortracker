@@ -1,0 +1,68 @@
+﻿@page "/rules"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Règles</PageTitle>
+
+<h1>Règles</h1>
+
+@if (rules == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Libellé</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rule in rules)
+            {
+                <tr>
+                    <td>@rule.Description</td>
+                    <td @onclick="() => DeleteRule(rule.RuleId)">Supprimer</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button @onclick="AddRule">Ajouter une règle</button>
+    <input type="text" @bind="newRuleDescription" />
+
+}
+
+@code {
+    private IEnumerable<Data.Rule>? rules;
+    private string? newRuleDescription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = new Data.KidsContext();
+        rules = await db.Rules.ToListAsync();
+    }
+
+    private async Task AddRule()
+    {
+        if (newRuleDescription == null)
+        {
+            return;
+        }
+        using var db = new Data.KidsContext();
+        db.Rules.Add(new Data.Rule { Description = newRuleDescription });
+        await db.SaveChangesAsync();
+        newRuleDescription = null;
+        rules = await db.Rules.ToListAsync();
+    }
+
+    private async Task DeleteRule(int id)
+    {
+        using var db = new Data.KidsContext();
+        db.Rules.Remove(db.Rules.Find(id));
+        await db.SaveChangesAsync();
+        rules = await db.Rules.ToListAsync();
+    }
+}

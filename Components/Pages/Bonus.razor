@@ -1,0 +1,68 @@
+﻿@page "/bonus"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Bonus</PageTitle>
+
+<h1>Bonus</h1>
+
+@if (bonus == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Bonus</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var bonu in bonus)
+            {
+                <tr>
+                    <td>@bonu.Name</td>
+                    <td @onclick="() => DeleteBonus(bonu.BonusId)">Supprimer</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button @onclick="AddBonus">Ajouter un bonus</button>
+    <input type="text" @bind="newBonusName" />
+
+}
+
+@code {
+    private IEnumerable<Data.Bonus>? bonus;
+    private string? newBonusName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = new Data.KidsContext();
+        bonus = await db.Bonus.ToListAsync();
+    }
+
+    private async Task AddBonus()
+    {
+        if (newBonusName == null)
+        {
+            return;
+        }
+        using var db = new Data.KidsContext();
+        db.Bonus.Add(new Data.Bonus { Name = newBonusName });
+        await db.SaveChangesAsync();
+        newBonusName = null;
+        bonus = await db.Bonus.ToListAsync();
+    }
+
+    private async Task DeleteBonus(int id)
+    {
+        using var db = new Data.KidsContext();
+        db.Bonus.Remove(db.Bonus.Find(id));
+        await db.SaveChangesAsync();
+        bonus = await db.Bonus.ToListAsync();
+    }
+}
