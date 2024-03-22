@@ -1,4 +1,6 @@
 using kidsbehaviortracker.Components;
+using Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,4 +26,8 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+using (var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope()) // Update this line
+{
+    new KidsContext().Database.Migrate();
+}
 app.Run();
