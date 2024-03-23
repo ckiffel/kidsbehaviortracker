@@ -5,36 +5,40 @@
 <h1>Quotidien (@date.ToString("dd/MM/yyyy"))</h1>
 
 <table class="table">
-    <tr>
-        <th></th>
-        @foreach (var kid in kids)
-        {
-            <th>@kid.Name</th>
-        }
-    </tr>
-
-    @foreach (var rule in rules)
-    {
+    <thead>
         <tr>
-            <th>@rule.Description</th>
+            <th></th>
             @foreach (var kid in kids)
             {
-                <td>
-                    @foreach (var card in GetCards(kid.KidId, rule.RuleId))
-                    {
-                        <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
-                            Jaune
-                            <button class="btn btn-link" @onclick="() => RemoveCard(card.CardId)">X</button>
-                        </span>
-                    }
-                    <button class="btn btn-warning"
-                        @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Yellow)">Carton jaune</button>
-                    <button class="btn btn-danger" @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Red)">Carton
-                        rouge</button>
-                </td>
+                <th>@kid.Name</th>
             }
         </tr>
-    }
+    </thead>
+
+    <tbody>
+        @foreach (var rule in rules)
+        {
+            <tr>
+                <th>@rule.Description</th>
+                @foreach (var kid in kids)
+                {
+                    <td>
+                        @foreach (var card in GetCards(kid.KidId, rule.RuleId))
+                        {
+                            <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
+                                &nbsp;
+                                <button class="btn btn-link" @onclick="() => RemoveCard(card.CardId)">X</button>
+                            </span>
+                        }
+                        <button class="btn btn-warning btn-sm"
+                            @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Yellow)">+</button>
+                        <button class="btn btn-danger btn-sm"
+                            @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Red)">+</button>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
 </table>
 
 @code {
@@ -69,6 +73,7 @@
             };
         db.Cards.Add(card);
         await db.SaveChangesAsync();
+        cards = await db.Cards.ToListAsync();
     }
 
     private async Task RemoveCard(int cardId)
@@ -80,5 +85,6 @@
             db.Cards.Remove(card);
             await db.SaveChangesAsync();
         }
+        cards = await db.Cards.ToListAsync();
     }
 }

@@ -2,10 +2,12 @@
 @using Microsoft.EntityFrameworkCore
 
 <h1>Comportement des enfants (résumé)</h1>
+<h2>(@currentWeekMonday.ToString("dd/MM/yyyy")) - (@currentWeekSunday.ToString("dd/MM/yyyy"))</h2>
 
 @foreach (var kid in kids)
 {
-    <table>
+    <h3>@kid.Name</h3>
+    <table class="table">
     <tr>
         <th></th>
         @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
@@ -17,10 +19,17 @@
         @foreach (var rule in rules)
         {
             <tr>
-                <th></th>
+                <td>@rule.Description</td>
                 @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
                 {
-                    <th> ? </th>
+                    <td>
+                        @foreach (var card in GetCards(kid.KidId, rule.RuleId, currentWeekMonday.AddDays(((int)day + 6) % 7)))
+                        {
+                            <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
+                                &nbsp;
+                            </span>
+                        }
+                    </td>
                 }
             </tr>
         }
@@ -31,11 +40,22 @@
 @code {
     private IEnumerable<Data.Kid>? kids;
     private IEnumerable<Data.Rule>? rules;
+    private IEnumerable<Data.Card>? cards;
+
+    private DateTime currentWeekMonday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
+    private DateTime currentWeekSunday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Sunday + 7);
+
 
     protected override async Task OnInitializedAsync()
     {
         using var db = new Data.KidsContext();
         kids = await db.Kids.ToListAsync();
         rules = await db.Rules.ToListAsync();
+        cards = await db.Cards.ToListAsync();
+    }
+
+    private IEnumerable<Data.Card>? GetCards(int kidId, int ruleId, DateTime date)
+    {
+        return cards?.Where(c => c.KidId == kidId && c.RuleId == ruleId && c.Date == date);
     }
 }
