@@ -1,8 +1,9 @@
 ﻿@page "/summary"
 @using Microsoft.EntityFrameworkCore
+@using System.Globalization
 
 <h1>Comportement des enfants (résumé)</h1>
-<h2>(@currentWeekMonday.ToString("dd/MM/yyyy")) - (@currentWeekSunday.ToString("dd/MM/yyyy"))</h2>
+<h2>@currentWeekMonday.ToString("dd/MM/yyyy") - @currentWeekSunday.ToString("dd/MM/yyyy")</h2>
 
 @foreach (var kid in kids)
 {
@@ -10,9 +11,9 @@
     <table class="table">
     <tr>
         <th></th>
-        @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+        @for (var day = currentWeekMonday; day <= currentWeekSunday; day = day.AddDays(1))
             {
-                <th>@day</th>
+                <th>@day.ToString("dddd")</th>
             }
         </tr>
 
@@ -20,10 +21,10 @@
         {
             <tr>
                 <td>@rule.Description</td>
-                @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+                @for (var day = currentWeekMonday; day <= currentWeekSunday; day = day.AddDays(1))
                 {
                     <td>
-                        @foreach (var card in GetCards(kid.KidId, rule.RuleId, currentWeekMonday.AddDays(((int)day + 6) % 7)))
+                        @foreach (var card in GetCards(kid.KidId, rule.RuleId, day))
                         {
                             <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
                                 &nbsp;
@@ -42,12 +43,28 @@
     private IEnumerable<Data.Rule>? rules;
     private IEnumerable<Data.Card>? cards;
 
-    private DateTime currentWeekMonday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
-    private DateTime currentWeekSunday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Sunday + 7);
+    private DateTime currentWeekMonday;
+    private DateTime currentWeekSunday;
 
+    private DateTime GetCurrentWeekMonday()
+    {
+        CultureInfo ci = new CultureInfo("fr-FR");
+        DayOfWeek firstDay = ci.DateTimeFormat.FirstDayOfWeek;
+        DateTime today = DateTime.Today;
+        int offset = firstDay - today.DayOfWeek;
+        DateTime monday = today.AddDays(offset);
+
+        if (DateTime.Now.DayOfWeek == DayOfWeek.Sunday)
+        {
+            monday = monday.AddDays(-7);
+        }
+        return monday;
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        currentWeekMonday = GetCurrentWeekMonday();
+        currentWeekSunday = GetCurrentWeekMonday().AddDays(6);
         using var db = new Data.KidsContext();
         kids = await db.Kids.ToListAsync();
         rules = await db.Rules.ToListAsync();

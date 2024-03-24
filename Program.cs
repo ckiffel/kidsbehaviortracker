@@ -1,6 +1,8 @@
 using kidsbehaviortracker.Components;
 using Data;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,4 +32,13 @@ using (var scope = app.Services.GetRequiredService<IServiceScopeFactory>().Creat
 {
     new KidsContext().Database.Migrate();
 }
+
+var supportedCultures = new[] { new CultureInfo("fr-FR") };
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("fr-FR"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
 app.Run();
