@@ -2,7 +2,11 @@
 @rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 
-<h1>Quotidien (@date.ToString("dd/MM/yyyy"))</h1>
+<div>
+    <span @onclick="PreviousDay"> &lt; </span>
+    @date.ToString("dddd, dd/MM/yyyy")
+    <span @onclick="NextDay"> &gt; </span>
+</div>
 
 <table class="table">
     <thead>
@@ -25,11 +29,13 @@
                     <td>
                         @foreach (var card in GetCards(kid.KidId, rule.RuleId))
                         {
-                            <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
-                                &nbsp;
-                                <button class="btn btn-link" @onclick="() => RemoveCard(card.CardId)">X</button>
-                            </span>
+                            <button
+                             @onclick="() => RemoveCard(card.CardId)"
+                             class="btn btn-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger") btn-sm">
+                                &nbsp; X
+                            </button>
                         }
+                        &nbsp;
                         <button class="btn btn-warning btn-sm"
                             @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Yellow)">+</button>
                         <button class="btn btn-danger btn-sm"
@@ -47,6 +53,17 @@
     private IEnumerable<Data.Card>? cards;
 
     private DateTime date = DateTime.Now.Date;
+
+    private void NextDay()
+    {
+        date = date.AddDays(1);
+    }
+
+    private void PreviousDay()
+    {
+        date = date.AddDays(-1);
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
