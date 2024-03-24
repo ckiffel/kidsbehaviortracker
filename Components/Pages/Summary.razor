@@ -24,12 +24,14 @@
                 @for (var day = currentWeekMonday; day <= currentWeekSunday; day = day.AddDays(1))
                 {
                     <td>
-                        @foreach (var card in GetCards(kid.KidId, rule.RuleId, day))
-                        {
-                            <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
-                                &nbsp;
-                            </span>
-                        }
+                        <div class="current-cards">
+                            @foreach (var card in GetCards(kid.KidId, rule.RuleId, day))
+                            {
+                                <span class="badge bg-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger")">
+                                    &nbsp;
+                                </span>
+                            }
+                        </div>
                     </td>
                 }
             </tr>

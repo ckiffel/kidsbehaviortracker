@@ -14,7 +14,7 @@
             <th></th>
             @foreach (var kid in kids)
             {
-                <th>@kid.Name</th>
+                <th class="kid-column">@kid.Name</th>
             }
         </tr>
     </thead>
@@ -27,19 +27,22 @@
                 @foreach (var kid in kids)
                 {
                     <td>
+                        <div class="current-cards">
                         @foreach (var card in GetCards(kid.KidId, rule.RuleId))
                         {
                             <button
                              @onclick="() => RemoveCard(card.CardId)"
                              class="btn btn-@(card.Color == Data.CardColor.Yellow ? "warning" : "danger") btn-sm">
-                                &nbsp; X
+                                X
                             </button>
                         }
-                        &nbsp;
+                        </div>
+                        <div class="kid-column-actions">
                         <button class="btn btn-warning btn-sm"
                             @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Yellow)">+</button>
                         <button class="btn btn-danger btn-sm"
                             @onclick="() => AddCard(kid.KidId, rule.RuleId, Data.CardColor.Red)">+</button>
+                            </div>
                     </td>
                 }
             </tr>
